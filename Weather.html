@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- WEATHER DATA FOR 5 DAYS -->
+    <div class="container">
+      <h2>Weather data for 5 days</h2>
+      <img src="cloud.svg" width="150"/>
+      <div class="city">Bangalore, India</div>
+      <div class="day"></div>
+      <ul>
+      </ul>
+      <div class="error">Weather data not available</div>
+    </div>
+  </body>
+
+  <script>
+    let CITY = "Bangalore",
+      STATE_CODE = "IN-KA",
+      API_KEY = "347225497f8c36fa3090dccf0772b25e",
+      API_ENDPOINT = "http://api.openweathermap.org/data/2.5/forecast";
+    try {
+      fetch(`${API_ENDPOINT}?q=${CITY},${STATE_CODE}&appid=${API_KEY}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.list) {
+            processData(data);
+            console.log("data", data);
+          }
+        });
+    } catch (err) {
+      let error = document.querySelector(".error");
+      error.classList.add("show");
+    }
+
+    let processData = (data) => {
+      let { list, city } = data;
+      const DAY = list[0].dt_txt;
+      const DAY_NAME = getDayNameByDate(DAY);
+      document.querySelector(".day").innerHTML = ` ${DAY_NAME} ${DAY} `;
+
+      for (let i = 0; i < list.length; i += 8) {
+        let li = document.createElement("li");
+        const DAY_NAME = getDayNameByDate(list[i].dt_txt);
+        /*deg Celcius=kelvin - 273 deg C  */
+        let temprature = (list[i].main.temp - 273.15).toFixed(1); 
+        let description = list[i].weather[0].description;
+
+        /*attach weather data */
+        let name = document.createElement("div");
+        let temp = document.createElement("div");
+        let desc = document.createElement("div");
+        name.classList.add("name");
+        temp.classList.add("temp");
+        desc.classList.add("desc");
+
+        name.innerHTML = DAY_NAME;
+        temp.innerHTML = temprature;
+        desc.innerHTML = description;
+        li.appendChild(name);
+        li.appendChild(temp);
+        li.appendChild(desc);
+        let ul = document.querySelector("ul");
+        ul.appendChild(li);
+      }
+    };
+    /*get name of day from date string */
+    let getDayNameByDate = (DAY) => {
+      let days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      let d = new Date(DAY);
+      return days[d.getDay()];
+    };
+  </script>
+</html>
